@@ -1,11 +1,25 @@
 class Master {
 
-    constructor(name, id, hp, damage, isEnemy=false) {
+    constructor(name, id, hp, baseDamage, isFriendly=false) {
         this.name = name;
         this.id = id;
         this.hp = hp;
-        this.damage = damage;
-        this.isEnemy = isEnemy;
+        this.baseDamage = baseDamage;
+        this.damage = baseDamage;
+        this.isFriendly = isFriendly;
+        this.selectable = true;
+    }
+
+    toString() {
+        let result = "";
+        result += `name: ${this.name} hp: ${this.hp} `;
+        result += `damage: ${this.damage} isFriendly: ${this.isFriendly} `;
+        result += `selectable: ${this.selectable}`;
+        return result;
+    }
+
+    isAlive() {
+        return this.hp > 0;
     }
 
     decreaseHP(num) {
@@ -13,7 +27,7 @@ class Master {
     }
 
     makeEnemy() {
-        this.isEnemy = true;
+        this.isFriendly = true;
     }
 
     attack(Opponent) {
@@ -22,8 +36,8 @@ class Master {
         } else {
             Opponent.hp = 0;
         }
-        if (!this.isEnemy) {
-            this.damage += this.damage;
+        if (this.isFriendly) {
+            this.damage += this.baseDamage;
         }
     }
 
@@ -148,21 +162,28 @@ function initialize() {
     }
 }
 
+/** Initialized the Game */
 initialize();
 
 $(".card").click(function() {
     let clickedObj = $(this);
     let masterID = clickedObj.attr("value");
+    if (!MasterVars[masterID].selectable) {
+        return;
+    }
     if (myChar == null) {
         myChar = MasterVars[masterID];
-        console.log("My Character Object: " + myChar);
+        myChar.selectable = false;
+        myChar.isFriendly = true;
+        console.log("My Character Object: " + myChar.toString());
+        unstageFromAll([myChar]);
         stageMasters(myCharSection, [myChar]);
-        unstageMasters(charSection, [myChar]);
     } else if (defenderChar == null) {
         defenderChar = MasterVars[masterID];
-        console.log("Defender Character Object: " + defenderChar);
+        defenderChar.selectable = false;
+        console.log("Defender Character Object: " + defenderChar.toString());
+        unstageFromAll([defenderChar]);
         stageMasters(defenderSection, [defenderChar]);
-        unstageMasters(charSection, [defenderChar]);
 
         for (let i = 0; i < MASTERS.length; i++) {
             if (MASTERS[i] !== myChar && MASTERS[i] !== defenderChar) {
@@ -177,7 +198,7 @@ $(".card").click(function() {
 
 
 $(".attack-button").click(function() {
-    if (!gameOver && myChar != null && defenderChar != null) {
+    if (!gameOver && myChar !== null && defenderChar !== null) {
         myChar.attack(defenderChar);
         defenderChar.attack(myChar);
         myChar.updateHPDisplay();
@@ -188,7 +209,7 @@ $(".attack-button").click(function() {
 // stageMasters(myCharSection, [Maul]);
 // unstageMasters(charSection, [Maul]);
 // Maul.makeEnemy();
-// console.log(Maul.isEnemy);
+// console.log(Maul.isFriendly);
 // Maul.attack(Luke);
 // Luke.updateHPDisplay();
 // ObiWan.presentMaster(charSection);
