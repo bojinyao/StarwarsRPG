@@ -132,88 +132,111 @@ var MasterPics = {
     "Maul" : SOURCE + "Maul.jpeg",
 };
 
-var charSection = $(".characters-section");
-var myCharSection = $(".my-character-section");
-var enemyCharSection = $(".enemy-characters-section");
-var defenderSection = $(".defender-section");
+$(document).ready(function () {
+    var charSection = $(".characters-section");
+    var myCharSection = $(".my-character-section");
+    var enemyCharSection = $(".enemy-characters-section");
+    var defenderSection = $(".defender-section");
+    var promptSection = $(".prompt-section");
+    var line1 = $(".line-1");
+    var line2 = $(".line-2");
 
 
 
-/** Game Set up at the beginning. */
-function initialize() {
-    gameOver = false;
-    myChar = null;
-    defenderChar = null;
-    ObiWan = new Master("Obi-Wan Kenobi", "ObiWan", 120, 6);
-    Luke = new Master("Luke Skywalker", "Luke", 100, 8);
-    Sidious = new Master("Darth Sidious", "Sidious", 150, 4);
-    Maul = new Master("Darth Maul", "Maul", 100, 8);
-    MasterVars = {
-        "ObiWan" : ObiWan,
-        "Luke" : Luke,
-        "Sidious" : Sidious,
-        "Maul" : Maul,
+    /** Game Set up at the beginning. */
+    function initialize() {
+        gameOver = false;
+        myChar = null;
+        defenderChar = null;
+        ObiWan = new Master("Obi-Wan Kenobi", "ObiWan", 120, 6);
+        Luke = new Master("Luke Skywalker", "Luke", 100, 8);
+        Sidious = new Master("Darth Sidious", "Sidious", 150, 4);
+        Maul = new Master("Darth Maul", "Maul", 100, 8);
+        MasterVars = {
+            "ObiWan": ObiWan,
+            "Luke": Luke,
+            "Sidious": Sidious,
+            "Maul": Maul,
+        }
+        MASTERS = [ObiWan, Luke, Sidious, Maul];
+        stageMasters(charSection, MASTERS);
+        let tempList = [myCharSection, enemyCharSection, defenderSection];
+        for (let i = 0; i < tempList.length; i++) {
+            unstageMasters(tempList[i], MASTERS);
+        }
     }
-    MASTERS = [ObiWan, Luke, Sidious, Maul];
-    stageMasters(charSection, MASTERS);
-    let tempList = [myCharSection, enemyCharSection, defenderSection];
-    for (let i = 0; i < tempList.length; i++) {
-        unstageMasters(tempList[i], MASTERS);
-    }
-}
 
-/** Initialized the Game */
-initialize();
+    /** Initialized the Game */
+    initialize();
 
-$(".card").click(function() {
-    let clickedObj = $(this);
-    let masterID = clickedObj.attr("value");
-    if (!MasterVars[masterID].selectable) {
-        return;
-    }
-    if (myChar == null) {
-        myChar = MasterVars[masterID];
-        myChar.selectable = false;
-        myChar.isFriendly = true;
-        console.log("My Character Object: " + myChar.toString());
-        unstageFromAll([myChar]);
-        stageMasters(myCharSection, [myChar]);
-    } else if (defenderChar == null) {
-        defenderChar = MasterVars[masterID];
-        defenderChar.selectable = false;
-        console.log("Defender Character Object: " + defenderChar.toString());
-        unstageFromAll([defenderChar]);
-        stageMasters(defenderSection, [defenderChar]);
+    $(document).on("click", ".card", function () {
+        
+        let clickedObj = $(this);
+        let masterID = clickedObj.attr("value");
+        if (!MasterVars[masterID].selectable) {
+            return;
+        }
+        if (myChar == null) {
+            myChar = MasterVars[masterID];
+            myChar.selectable = false;
+            myChar.isFriendly = true;
+            console.log("My Character Object: " + myChar.toString());
+            unstageFromAll([myChar]);
+            stageMasters(myCharSection, [myChar]);
+        } else if (defenderChar == null) {
+            defenderChar = MasterVars[masterID];
+            defenderChar.selectable = false;
+            console.log("Defender Character Object: " + defenderChar.toString());
+            unstageFromAll([defenderChar]);
+            stageMasters(defenderSection, [defenderChar]);
 
-        for (let i = 0; i < MASTERS.length; i++) {
-            if (MASTERS[i] !== myChar && MASTERS[i] !== defenderChar) {
-                unstageFromAll([MASTERS[i]]);
-                stageMasters(enemyCharSection, [MASTERS[i]])
+            for (let i = 0; i < MASTERS.length; i++) {
+                if (MASTERS[i] !== myChar && MASTERS[i] !== defenderChar && MASTERS[i].isAlive()) {
+                    unstageFromAll([MASTERS[i]]);
+                    stageMasters(enemyCharSection, [MASTERS[i]])
+                }
+            }
+        } else {
+            return;
+        }
+    });
+
+
+    $(".attack-button").click(function () {
+
+        if (!gameOver && myChar != null && defenderChar != null) {
+            line1.text(`You attacked ${defenderChar.name} for ${myChar.damage} damages.`);
+            line2.text(`${defenderChar.name} attacked you for ${defenderChar.damage} damages.`);
+
+            myChar.attack(defenderChar);
+            defenderChar.attack(myChar);
+            myChar.updateHPDisplay();
+            defenderChar.updateHPDisplay();
+            if (!defenderChar.isAlive()) {
+                unstageFromAll([defenderChar]);
+                if (enemyCharSection.children().length > 0) {
+                    line1.text(`You have defeated ${defenderChar.name}! You can choose a fight another enemy.`);
+                    line2.empty();
+                    defenderChar = null;
+                } else {
+                    gameOver = true;
+                    line1.text("You won!!! Game Over.");
+                    line2.empty();
+                }
+            } else if (!myChar.isAlive()) {
+                gameOver = true;
+                line1.text("You've been defeated... GAME OVER!");
+                line2.empty();
+            } else {
+                return;
             }
         }
-    } else {
-        return;
-    }
-});
+    });
 
-
-$(".attack-button").click(function() {
-    if (!gameOver && myChar !== null && defenderChar !== null) {
-        myChar.attack(defenderChar);
-        defenderChar.attack(myChar);
-        myChar.updateHPDisplay();
-        defenderChar.updateHPDisplay();
-    }
-});
-// stageMasters(charSection, [Luke, Sidious, Maul]);
-// stageMasters(myCharSection, [Maul]);
-// unstageMasters(charSection, [Maul]);
-// Maul.makeEnemy();
-// console.log(Maul.isFriendly);
-// Maul.attack(Luke);
-// Luke.updateHPDisplay();
-// ObiWan.presentMaster(charSection);
-// Luke.presentMaster(charSection);
-// Sidious.presentMaster(charSection);
-// Maul.presentMaster(charSection);
-// ObiWan.removeMaster();
+    $(".restart-button").on("click", function() {
+        line1.empty();
+        line2.empty();
+        unstageFromAll(MASTERS);
+        initialize();
+    })
+})
