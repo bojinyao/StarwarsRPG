@@ -43,7 +43,14 @@ class Master {
 
     presentMaster(sectionSelector) {
         let cardDiv = $("<div>");
-        cardDiv.addClass("card " + this.id);
+        cardDiv.addClass(`card ${this.id} border-light`);
+        if (sectionSelector.attr("class").includes("all-characters-section")) {
+            cardDiv.addClass("bg-dark");
+        } else if (this.isFriendly) {
+            cardDiv.addClass("bg-success");
+        } else {
+            cardDiv.addClass("bg-danger");
+        }
         cardDiv.attr("style", "width: 8rem; height: 7rem;");
         cardDiv.attr("value", this.id);
         let image = $("<img>");
@@ -133,11 +140,10 @@ var MasterPics = {
 };
 
 $(document).ready(function () {
-    var charSection = $(".characters-section");
+    var charSection = $(".all-characters-section");
     var myCharSection = $(".my-character-section");
     var enemyCharSection = $(".enemy-characters-section");
     var defenderSection = $(".defender-section");
-    var promptSection = $(".prompt-section");
     var line1 = $(".line-1");
     var line2 = $(".line-2");
 
@@ -215,8 +221,8 @@ $(document).ready(function () {
             if (!defenderChar.isAlive()) {
                 unstageFromAll([defenderChar]);
                 if (enemyCharSection.children().length > 0) {
-                    line1.text(`You have defeated ${defenderChar.name}! You can choose a fight another enemy.`);
-                    line2.empty();
+                    line1.text(`You have defeated ${defenderChar.name}!`);
+                    line2.text("You can choose a fight another enemy.");
                     defenderChar = null;
                 } else {
                     gameOver = true;
