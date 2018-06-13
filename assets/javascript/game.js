@@ -26,7 +26,7 @@ class Master {
         this.hp -= num;
     }
 
-    makeEnemy() {
+    makeFriendly() {
         this.isFriendly = true;
     }
 
@@ -91,33 +91,33 @@ class Master {
 /**
  * Show masters inside specific classSelector.
  * @param {jQuery} classSelector 
- * @param {Master[]} masters 
+ * @param {Master} masters 
  */
-function stageMasters(classSelector, masters) {
-    for (let i = 0; i < masters.length; i++) {
-        masters[i].presentMaster(classSelector);
-    }
+function stageMasters(classSelector, ...masters) {
+    masters.forEach(m => {
+        m.presentMaster(classSelector);
+    });
 }
 
 /**
  * Remove masters inside specific classSelector.
  * @param {jQuery} classSelector 
- * @param {Master[]} masters 
+ * @param {Master} masters 
  */
 function unstageMasters(classSelector, masters) {
-    for (let i = 0; i < masters.length; i++) {
-        masters[i].removeMaster(classSelector);
-    }
+    masters.forEach(m => {
+        m.removeMaster(classSelector);
+    });
 }
 
 /**
  * Remove masters from the display entirely.
- * @param {Master[]} masters 
+ * @param {Master} masters 
  */
-function unstageFromAll(masters) {
-    for (let i = 0; i < masters.length; i++) {
-        masters[i].removeMasterFromAll();
-    }
+function unstageFromAll(...masters) {
+    masters.forEach(m => {
+        m.removeMasterFromAll();
+    });
 }
 
 const SOURCE = "assets/images/"
@@ -167,8 +167,8 @@ $(document).ready(function () {
             "Maul": Maul,
         }
         MASTERS = [ObiWan, Luke, Sidious, Maul];
-        unstageFromAll(MASTERS);
-        stageMasters(charSection, MASTERS);
+        unstageFromAll(...MASTERS);
+        stageMasters(charSection, ...MASTERS);
     }
 
     /** Initialized the Game */
@@ -184,23 +184,23 @@ $(document).ready(function () {
         if (myChar == null) {
             myChar = MasterVars[masterID];
             myChar.selectable = false;
-            myChar.isFriendly = true;
+            myChar.makeFriendly();
             console.log("My Character Object: " + myChar.toString());
-            unstageFromAll([myChar]);
-            stageMasters(myCharSection, [myChar]);
+            unstageFromAll(myChar);
+            stageMasters(myCharSection, myChar);
         } else if (defenderChar == null) {
             defenderChar = MasterVars[masterID];
             defenderChar.selectable = false;
             console.log("Defender Character Object: " + defenderChar.toString());
-            unstageFromAll([defenderChar]);
-            stageMasters(defenderSection, [defenderChar]);
+            unstageFromAll(defenderChar);
+            stageMasters(defenderSection, defenderChar);
 
-            for (let i = 0; i < MASTERS.length; i++) {
-                if (MASTERS[i] !== myChar && MASTERS[i] !== defenderChar && MASTERS[i].isAlive()) {
-                    unstageFromAll([MASTERS[i]]);
-                    stageMasters(enemyCharSection, [MASTERS[i]])
+            MASTERS.forEach(master => {
+                if (master !== myChar && master !== defenderChar && master.isAlive()) {
+                    unstageFromAll(master);
+                    stageMasters(enemyCharSection, master);
                 }
-            }
+            });
         } else {
             return;
         }
@@ -218,7 +218,7 @@ $(document).ready(function () {
             myChar.updateHPDisplay();
             defenderChar.updateHPDisplay();
             if (!defenderChar.isAlive()) {
-                unstageFromAll([defenderChar]);
+                unstageFromAll(defenderChar);
                 if (enemyCharSection.children().length > 0) {
                     line1.text(`You have defeated ${defenderChar.name}!`);
                     line2.text("You can choose a fight another enemy.");
