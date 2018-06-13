@@ -151,6 +151,8 @@ $(document).ready(function () {
 
     /** Game Set up at the beginning. */
     function initialize() {
+        line1.empty();
+        line2.empty();
         gameOver = false;
         myChar = null;
         defenderChar = null;
@@ -165,11 +167,8 @@ $(document).ready(function () {
             "Maul": Maul,
         }
         MASTERS = [ObiWan, Luke, Sidious, Maul];
+        unstageFromAll(MASTERS);
         stageMasters(charSection, MASTERS);
-        let tempList = [myCharSection, enemyCharSection, defenderSection];
-        for (let i = 0; i < tempList.length; i++) {
-            unstageMasters(tempList[i], MASTERS);
-        }
     }
 
     /** Initialized the Game */
@@ -240,9 +239,6 @@ $(document).ready(function () {
     });
 
     $(".restart-button").on("click", function() {
-        line1.empty();
-        line2.empty();
-        unstageFromAll(MASTERS);
         initialize();
     })
 })
